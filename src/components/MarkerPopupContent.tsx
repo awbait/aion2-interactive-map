@@ -1,5 +1,7 @@
 // src/components/MarkerPopupContent.tsx
 import React from "react";
+import { useTranslation } from "react-i18next";
+import {Button} from "@heroui/react";
 
 type Props = {
   name: string;
@@ -8,6 +10,9 @@ type Props = {
   x: number;
   y: number;
   description: string;
+  canComplete: boolean;
+  completed: boolean;
+  onToggleCompleted: () => void;
 };
 
 const MarkerPopupContent: React.FC<Props> = ({
@@ -17,7 +22,12 @@ const MarkerPopupContent: React.FC<Props> = ({
                                                x,
                                                y,
                                                description,
+                                               canComplete,
+                                               completed,
+                                               onToggleCompleted,
                                              }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-w-[260px] max-w-[360px] space-y-2 text-xs leading-snug">
       {/* Title */}
@@ -35,6 +45,22 @@ const MarkerPopupContent: React.FC<Props> = ({
       <div className="pt-1 border-t border-default-200">
         <p className="text-[11px] text-default-600">{description}</p>
       </div>
+
+      {canComplete && (
+        <div className="pt-1">
+          <Button
+            size="sm"
+            variant="flat"
+            color={completed ? "success" : "default"}
+            onPress={onToggleCompleted}
+          >
+            {completed
+              ? t("common:markerActions:markNotCompleted", "Completed")
+              : t("common:markerActions:markCompleted", "Mark as completed")}
+          </Button>
+        </div>
+      )}
+
     </div>
   );
 };

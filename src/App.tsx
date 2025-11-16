@@ -48,8 +48,14 @@ const App: React.FC = () => {
     setVisibleSubtypes((prev) => (prev.size === 0 ? all : prev));
   }, [types]);
 
-  const { markers, loading: loadingMarkers, subtypeCounts } =
-    useMarkers(selectedMapId);
+  const {
+    markers,
+    loading: loadingMarkers,
+    subtypeCounts,
+    completedSet,
+    completedCounts,
+    toggleMarkerCompleted,
+  } = useMarkers(selectedMapId);
 
   const selectedMap: GameMapMeta | null = useMemo(
     () => maps.find((m) => m.id === selectedMapId) ?? null,
@@ -72,7 +78,6 @@ const App: React.FC = () => {
 
   const handleToggleSubtype = (categoryId: string, subtypeId: string) => {
     const key = `${categoryId}::${subtypeId}`;
-    console.log(key);
     setVisibleSubtypes((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -82,7 +87,7 @@ const App: React.FC = () => {
   };
 
   const handleShowAllSubtypes = () => {
-    setVisibleSubtypes(allSubtypes);
+    setVisibleSubtypes(new Set(allSubtypes));
   };
 
   const handleHideAllSubtypes = () => {
@@ -98,7 +103,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-content1 text-foreground">
+    <div className="h-screen w-screen flex flex-col">
       <TopNavbar />
 
       <div className="flex flex-1 overflow-hidden">
@@ -109,6 +114,7 @@ const App: React.FC = () => {
           onMapChange={handleMapChange}
           loadingMarkers={loadingMarkers}
           subtypeCounts={subtypeCounts}
+          completedCounts={completedCounts}
           visibleSubtypes={visibleSubtypes}
           onToggleSubtype={handleToggleSubtype}
           showLabels={showLabels}
@@ -124,6 +130,8 @@ const App: React.FC = () => {
           visibleSubtypes={visibleSubtypes}
           types={types}
           showLabels={showLabels}
+          completedSet={completedSet}
+          toggleMarkerCompleted={toggleMarkerCompleted}
         />
       </div>
     </div>

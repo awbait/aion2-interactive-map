@@ -1,6 +1,6 @@
 // src/components/GameMapView.tsx
-import React from "react";
-import { MapContainer, ImageOverlay } from "react-leaflet";
+import React, {useState} from "react";
+import { MapContainer, ImageOverlay, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
 import GameMarker from "./GameMarker";
@@ -12,6 +12,23 @@ import type {
   MarkerTypeCategory,
 } from "../types/game";
 
+
+type CursorTrackerProps = {
+  onUpdate: (x: number, y: number) => void;
+};
+
+const CursorTracker: React.FC<CursorTrackerProps> = ({ onUpdate }) => {
+  useMapEvents({
+    mousemove(e) {
+      const { lat, lng } = e.latlng;
+      // CRS.Simple: lat = y, lng = x
+      onUpdate(lng, lat);
+    },
+  });
+
+  return null;
+};
+
 type Props = {
   selectedMap: GameMapMeta | null;
   markers: MarkerInstance[];
@@ -19,6 +36,8 @@ type Props = {
   visibleSubtypes: Set<string>;
   types: MarkerTypeCategory[];
   showLabels: boolean;
+  completedSet: Set<string>;
+  toggleMarkerCompleted: (marker: MarkerInstance) => void;
 };
 
 const GameMapView: React.FC<Props> = ({
@@ -28,7 +47,13 @@ const GameMapView: React.FC<Props> = ({
                                         visibleSubtypes,
                                         types,
                                         showLabels,
+                                        completedSet,
+                                        toggleMarkerCompleted,
                                       }) => {
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+
   if (!selectedMap) {
     return (
       <div className="flex-1 flex items-center justify-center text-sm text-default-500">
@@ -65,6 +90,12 @@ const GameMapView: React.FC<Props> = ({
         attributionControl={false}
         ref={mapRef as any}
       >
+        <CursorTracker
+          onUpdate={(x, y) => {
+            setCursorPos({ x, y });
+          }}
+        />
+
         <ImageOverlay url={imageUrl} bounds={bounds} />
 
         {markers
@@ -80,9 +111,17 @@ const GameMapView: React.FC<Props> = ({
               marker={m}
               types={types}
               showLabel={showLabels}
+              completedSet={completedSet}
+              toggleMarkerCompleted={toggleMarkerCompleted}
             />
           ))}
       </MapContainer>
+
+      {cursorPos && (
+        <div className="absolute bottom-3 left-3 z-[1000] rounded bg-black/80 text-white text-sm px-3 py-1.5 pointer-events-none shadow-lg backdrop-blur-sm">
+          x: {cursorPos.x.toFixed(0)}, y: {cursorPos.y.toFixed(0)}
+        </div>
+      )}
     </div>
   );
 };

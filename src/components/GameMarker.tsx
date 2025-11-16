@@ -6,7 +6,7 @@ import L from "leaflet";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as SolidIcons from "@fortawesome/free-solid-svg-icons";
-import { faLocationPin } from "@fortawesome/free-solid-svg-icons";
+import { faLocationPin, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { renderToString } from "react-dom/server";
 
 import MarkerPopupContent from "./MarkerPopupContent";
@@ -19,6 +19,8 @@ type Props = {
   marker: MarkerInstance;
   types: MarkerTypeCategory[];
   showLabel: boolean;
+  completedSet: Set<string>;
+  toggleMarkerCompleted: (marker: MarkerInstance) => void;
 };
 
 /** Lookup icon definition from YAML (by category/subtype). */
@@ -59,6 +61,7 @@ function getSubtypeColor(
 function createPinIcon(
   innerIcon: IconDefinition,
   pinColor: string,
+  completed: boolean,
 ): L.DivIcon {
   const html = renderToString(
     <div
@@ -69,6 +72,7 @@ function createPinIcon(
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        opacity: completed ? 0.4 : 1,
       }}
     >
       {/* Outer pin */}
@@ -93,6 +97,19 @@ function createPinIcon(
           transform: "translateX(-50%)",
         }}
       />
+
+      {completed && (
+        <FontAwesomeIcon
+          icon={faCheckCircle}
+          style={{
+            position: "absolute",
+            fontSize: "12px",
+            right: "-2px",
+            bottom: "-2px",
+            color: "#22c55e", // emerald-500
+          }}
+        />
+      )}
     </div>,
   );
 
@@ -101,6 +118,7 @@ function createPinIcon(
     className: "",
     iconSize: [36, 36],
     iconAnchor: [18, 36],
+    popupAnchor: [0, -36],
   });
 }
 
@@ -109,6 +127,8 @@ const GameMarker: React.FC<Props> = ({
                                        marker,
                                        types,
                                        showLabel,
+                                       completedSet,
+                                       toggleMarkerCompleted,
                                      }) => {
   // marker.position is [x, y] in our data model
   const [x, y] = marker.position;
@@ -146,13 +166,23 @@ const GameMarker: React.FC<Props> = ({
     marker.categoryId,
     marker.subtypeId,
   );
-  const icon = createPinIcon(innerIcon, pinColor);
 
-  // Leaflet (CRS.Simple) expects [y, x]
-  const leafletPosition: [number, number] = [y, x];
+  // Find subtype definition to check canComplete
+  const cat = types.find((c) => c.id === marker.categoryId);
+  const sub = cat?.subtypes.find((s) => s.id === marker.subtypeId) || null;
+  const canComplete = !!sub?.canComplete;
+
+  // Completion key is stored per map in useMarkers; here we just build the same key
+  const completedKey = `${marker.categoryId}::${marker.subtypeId}::${marker.id}`;
+  const isCompleted = completedSet.has(completedKey);
+
+  const icon = createPinIcon(innerIcon, pinColor, isCompleted);
 
   return (
-    <Marker position={leafletPosition} icon={icon}>
+    <Marker
+      position={new L.LatLng(y, x)}
+      icon={icon}
+    >
       {showLabel && (
         <Tooltip
           permanent
@@ -172,6 +202,9 @@ const GameMarker: React.FC<Props> = ({
           x={x}
           y={y}
           description={description}
+          canComplete={canComplete}
+          completed={isCompleted}
+          onToggleCompleted={() => toggleMarkerCompleted(marker)}
         />
       </Popup>
     </Marker>
