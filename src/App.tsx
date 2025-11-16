@@ -11,6 +11,7 @@ import { useGameData } from "./hooks/useGameData";
 import { useMarkers } from "./hooks/useMarkers";
 
 import type { GameMapMeta, MapRef } from "./types/game";
+import {getQueryParam, setQueryParam} from "./utils/url.ts";
 
 const App: React.FC = () => {
   const VISIBLE_STORAGE_PREFIX = "aion2.visibleSubtypes.v1.";
@@ -28,8 +29,19 @@ const App: React.FC = () => {
 
   // Initialize selected map
   useEffect(() => {
-    if (!selectedMapId && maps.length > 0) {
-      setSelectedMapId(maps[0].id);
+    if (!maps || maps.length === 0) return;
+    if (selectedMapId) {
+      setQueryParam("map", selectedMapId);
+      return;
+    }
+    const initial = getQueryParam("map");
+    if (initial && maps.some((m) => m.id === initial)) {
+      setSelectedMapId(initial);
+    } else if (maps.length > 0 && !selectedMapId) {
+      // optional fallback: load first map
+      const first = maps[0].id;
+      setSelectedMapId(first);
+      setQueryParam("map", first);
     }
   }, [maps, selectedMapId]);
 

@@ -63,7 +63,7 @@ const MapSidebar: React.FC<Props> = ({
         <h2 className="text-sm font-semibold mb-2">
           {t("common:menu.maps", "Maps")}
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {maps.map((map) => (
             <Button
               key={map.id}

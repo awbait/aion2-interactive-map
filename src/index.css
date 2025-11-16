@@ -29,6 +29,10 @@ body {
     height: 100%;
 }
 
+.dark .leaflet-container {
+    background: hsl(var(--heroui-content1)); /* slate-950 / very dark */
+}
+
 .leaflet-tooltip {
     border-radius: 4px !important;
 }
