@@ -38,3 +38,15 @@ body {
     border-top-color: var(--tooltip-bg) !important;
 }
 
+/* Remove the white frame and padding around popup */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+}

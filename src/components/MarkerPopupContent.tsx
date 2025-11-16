@@ -1,7 +1,7 @@
 // src/components/MarkerPopupContent.tsx
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {Button} from "@heroui/react";
+import {Button, Card} from "@heroui/react";
 
 type Props = {
   name: string;
@@ -29,7 +29,14 @@ const MarkerPopupContent: React.FC<Props> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="min-w-[260px] max-w-[360px] space-y-2 text-xs leading-snug">
+    <Card
+      className="
+      min-w-[260px] max-w-[360px]
+      p-3 space-y-2 text-xs leading-snug
+      bg-content1 text-foreground
+    "
+      radius="sm"
+    >
       {/* Title */}
       <h3 className="text-sm font-semibold">{name}</h3>
 
@@ -61,7 +68,7 @@ const MarkerPopupContent: React.FC<Props> = ({
         </div>
       )}
 
-    </div>
+    </Card>
   );
 };
 
