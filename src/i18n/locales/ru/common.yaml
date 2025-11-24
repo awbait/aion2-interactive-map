@@ -1,0 +1,51 @@
+lang: 'ru'
+siteTitle: 'AION2 Interactive Map'
+announcement: 'Обновлены маркеры, скоро добавим скриншоты.'
+
+language:
+  label: 'Language'
+  ru: 'Русский'
+  en: 'English'
+
+ui:
+  confirm: 'Подтвердить'
+  cancel: 'Отменить'
+  close: 'Закрыть'
+  loading: 'Загрузка...'
+  search: 'Поиск'
+
+menu:
+  home: 'Главная'
+  settings: 'Настройки'
+  maps: 'Карты'
+  regions: 'Регионы'
+  markerTypes: 'Типы маркеров'
+  showNamesOnPins: 'Показать имена над маркерами'
+  showAllMarkers: 'Показать все'
+  hideAllMarkers: 'Скрыть все'
+  clearMarkerCompleted: 'Очистить отмеченное'
+  clearMarkerCompletedBody: 'Вы хотите удалить все выполненные отметки на этой карте?'
+
+buttons:
+  apply: 'Apply'
+  ok: 'OK'
+  yes: 'Yes'
+  no: 'No'
+
+errors:
+  unknown: 'An unknown error occurred.'
+  network: 'Network connection error.'
+  notFound: 'Resource not found.'
+
+markerActions:
+  markCompleted: 'Отметить как выполненное'
+  markNotCompleted: 'Выполнено'
+
+introModal:
+  version: 'Версия'
+  title: 'Велком AION2 Interactive Map'
+  body: |-
+    Что-то будет на русском
+
+  hint: |-
+    Maintaining a game guide website requires a tremendous amount of time and effort. If you wish to support us, you may do so via the Alipay QR code below — your kindness is what keeps this project moving forward ❤

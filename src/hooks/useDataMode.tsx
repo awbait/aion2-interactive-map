@@ -1,149 +1,150 @@
 // src/hooks/useDataMode.ts
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import i18n from "../i18n";
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+	type ReactNode,
+} from 'react'
+import i18n from '../i18n/i18n'
 
-export type DataMode = "static" | "dynamic";
-
-function normalize(mode: string | undefined): DataMode {
-  return mode === "dynamic" ? "dynamic" : "static";
-}
-
-const DEFAULT_DATA_MODE: DataMode = normalize(
-  import.meta.env.VITE_DEFAULT_DATA_MODE
-);
+export type DataMode = 'static' | 'dynamic'
 
 type DataModeContextValue = {
-  dataMode: DataMode;
-  setDataMode: (mode: DataMode) => void;
-  toggleDataMode: () => void;
-  getBaseUrl: () => string;
-  reloadI18n: () => void;
-};
+	dataMode: DataMode
+	setDataMode: (mode: DataMode) => void
+	toggleDataMode: () => void
+	getBaseUrl: () => string
+	reloadI18n: () => void
+}
 
 const DataModeContext = createContext<DataModeContextValue | undefined>(
-  undefined,
-);
+	undefined
+)
 
 // --- helpers shared by provider & reload ---
 
 function getStaticBaseUrl() {
-  return (import.meta.env.BASE_URL ?? "/").replace(/\/+$/, "");
+	const env = (import.meta as any)?.env || {}
+	return (env.BASE_URL ?? '/').replace(/\/+$/, '')
 }
 
 function computeBaseUrl(mode: DataMode): string {
-  if (mode === "static") {
-    return getStaticBaseUrl();
-  }
+	if (mode === 'static') {
+		return getStaticBaseUrl()
+	}
 
-  // Dynamic mode
-  if (import.meta.env.DEV) {
-    // Running on Vite dev server
-    return "http://localhost:9000/api/v1/export";   // your dev API
-  }
+	// Dynamic mode
+	if (import.meta.env.DEV) {
+		// Running on Vite dev server
+		return 'http://localhost:9000/api/v1/export' // your dev API
+	}
 
-  // Production build OR GitHub Pages
-  if (import.meta.env.PROD) {
-    return "/api/v1/export";      // your production API
-  }
+	// Production build OR GitHub Pages
+	if (import.meta.env.PROD) {
+		return '/api/v1/export' // your production API
+	}
 
-  // Fallback (should never happen)
-  return "/api/v1/export";
+	// Fallback (should never happen)
+	return '/api/v1/export'
 }
 
-export function getBackendLoadPath(mode: DataMode = DEFAULT_DATA_MODE)  {
-  const base = computeBaseUrl(mode);
-  const staticBase = getStaticBaseUrl();
-  return (lngs: string[], nss: string[]) => {
-    const lng = lngs[0];
-    const ns = nss[0];
-    if (ns === "common") {
-      return `${staticBase}/locales/${lng}/${ns}.yaml`;
-    }
-    return `${base}/locales/${lng}/${ns}.yaml`;
-  };
+export function getBackendLoadPath(mode?: DataMode) {
+	const effectiveMode = 'static'
+	const base = computeBaseUrl(effectiveMode)
+	const staticBase = getStaticBaseUrl()
+	return (lngs: string[], nss: string[]) => {
+		const lng = lngs[0]
+		const ns = nss[0]
+		if (ns === 'common') {
+			return `${staticBase}/locales/${lng}/${ns}.yaml`
+		}
+		return `${base}/locales/${lng}/${ns}.yaml`
+	}
 }
 
 function updateI18nForMode(mode: DataMode) {
-  console.log("updateI18nForMode:", mode);
-  const backend: any =
-    (i18n.services as any).backendConnector?.backend ?? null;
+	console.log('updateI18nForMode:', mode)
+	const backend: any = (i18n.services as any).backendConnector?.backend ?? null
 
-  if (backend) {
-    backend.options = backend.options || {};
-    backend.options.loadPath = getBackendLoadPath(mode);
-  }
+	if (backend) {
+		backend.options = backend.options || {}
+		backend.options.loadPath = getBackendLoadPath(mode)
+	}
 
-  i18n.reloadResources().catch((e) =>
-    console.error("[useDataMode] reloadResources error:", e),
-  );
+	i18n
+		.reloadResources()
+		.catch(e => console.error('[useDataMode] reloadResources error:', e))
 }
 
 // --- Provider ---
 
 type ProviderProps = {
-  children: ReactNode;
-};
+	children: ReactNode
+}
 
 export function DataModeProvider({ children }: ProviderProps) {
-  const [dataMode, setDataModeState] = useState<DataMode>(DEFAULT_DATA_MODE);
+	const [dataMode, setDataModeState] = useState<DataMode>(DEFAULT_DATA_MODE)
 
-  const setDataMode = useCallback((mode: DataMode) => {
-    setDataModeState(mode);
-  }, []);
+	const setDataMode = useCallback((mode: DataMode) => {
+		setDataModeState(mode)
+	}, [])
 
-  const toggleDataMode = useCallback(() => {
-    setDataModeState((prev) => {
-      const next = prev === "static" ? "dynamic" : "static";
-      console.log("toggleDataMode", prev, "->", next);
-      return next;
-    });
-  }, []);
+	const toggleDataMode = useCallback(() => {
+		setDataModeState(prev => {
+			const next = prev === 'static' ? 'dynamic' : 'static'
+			console.log('toggleDataMode', prev, '->', next)
+			return next
+		})
+	}, [])
 
-  const getBaseUrl = useCallback(() => {
-    return computeBaseUrl(dataMode);
-  }, [dataMode]);
+	const getBaseUrl = useCallback(() => {
+		return computeBaseUrl(dataMode)
+	}, [dataMode])
 
-  const reloadI18n = useCallback(() => {
-    updateI18nForMode(dataMode);
-  }, [dataMode]);
+	const reloadI18n = useCallback(() => {
+		updateI18nForMode(dataMode)
+	}, [dataMode])
 
-  // Automatically reload i18n whenever mode changes
-  useEffect(() => {
-    updateI18nForMode(dataMode);
-  }, [dataMode]);
+	// Automatically reload i18n whenever mode changes
+	useEffect(() => {
+		updateI18nForMode(dataMode)
+	}, [dataMode])
 
-  const value = useMemo<DataModeContextValue>(
-    () => ({
-      dataMode,
-      setDataMode,
-      toggleDataMode,
-      getBaseUrl,
-      reloadI18n,
-    }),
-    [dataMode, setDataMode, toggleDataMode, getBaseUrl, reloadI18n],
-  );
+	const value = useMemo<DataModeContextValue>(
+		() => ({
+			dataMode,
+			setDataMode,
+			toggleDataMode,
+			getBaseUrl,
+			reloadI18n,
+		}),
+		[dataMode, setDataMode, toggleDataMode, getBaseUrl, reloadI18n]
+	)
 
-  return (
-    <DataModeContext.Provider value={value}>
-      {children}
-    </DataModeContext.Provider>
-  );
+	return (
+		<DataModeContext.Provider value={value}>
+			{children}
+		</DataModeContext.Provider>
+	)
 }
 
 // --- Hook ---
 
 export function useDataMode(): DataModeContextValue {
-  const ctx = useContext(DataModeContext);
-  if (!ctx) {
-    throw new Error("useDataMode must be used within a DataModeProvider");
-  }
-  return ctx;
+	const ctx = useContext(DataModeContext)
+	if (!ctx) {
+		throw new Error('useDataMode must be used within a DataModeProvider')
+	}
+	return ctx
+}
+
+const DEFAULT_DATA_MODE: DataMode = normalize(
+	import.meta.env.VITE_DEFAULT_DATA_MODE
+)
+
+function normalize(mode: string | undefined): DataMode {
+	return mode === 'dynamic' ? 'dynamic' : 'static'
 }

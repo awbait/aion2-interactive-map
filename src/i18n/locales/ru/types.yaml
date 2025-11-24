@@ -1,0 +1,27 @@
+categories:
+  collection:
+    name: Коллекции
+  location:
+    name: Места
+subtypes:
+  battlefield:
+    description: Battlefield
+    name: Battlefield
+  hiddenCube:
+    description: Hidden Cube
+    name: Скрытый куб
+  monolithMaterial:
+    description: Monolith
+    name: Перья
+  occupation:
+    description: Occupation
+    name: Occupation
+  seal:
+    description: Seal
+    name: Seal
+  teleport:
+    description: Teleport Point
+    name: Kibelisk
+  village:
+    description: Деревни
+    name: Деревни
