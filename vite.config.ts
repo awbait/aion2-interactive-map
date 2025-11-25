@@ -13,6 +13,10 @@ const buildTime = process.env.BUILD_TIME ?? Date.now().toString()
 export default defineConfig({
 	base: process.env.VITE_PUBLIC_BASE || '/',
 	plugins: [react(), tailwindcss(), yaml()],
+	server: {
+		host: true,
+		port: 3000,
+	},
 	define: {
 		__BUILD_TIME__: JSON.stringify(buildTime),
 		__BUILD_GIT_COMMIT__: JSON.stringify(getGitVersion()),

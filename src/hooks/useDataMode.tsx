@@ -3,12 +3,10 @@ import {
 	createContext,
 	useCallback,
 	useContext,
-	useEffect,
 	useMemo,
 	useState,
 	type ReactNode,
 } from 'react'
-import i18n from '../i18n/i18n'
 
 export type DataMode = 'static' | 'dynamic'
 
@@ -17,7 +15,6 @@ type DataModeContextValue = {
 	setDataMode: (mode: DataMode) => void
 	toggleDataMode: () => void
 	getBaseUrl: () => string
-	reloadI18n: () => void
 }
 
 const DataModeContext = createContext<DataModeContextValue | undefined>(
@@ -51,7 +48,7 @@ function computeBaseUrl(mode: DataMode): string {
 	return '/api/v1/export'
 }
 
-export function getBackendLoadPath(mode?: DataMode) {
+export function getBackendLoadPath() {
 	const effectiveMode = 'static'
 	const base = computeBaseUrl(effectiveMode)
 	const staticBase = getStaticBaseUrl()
@@ -63,20 +60,6 @@ export function getBackendLoadPath(mode?: DataMode) {
 		}
 		return `${base}/locales/${lng}/${ns}.yaml`
 	}
-}
-
-function updateI18nForMode(mode: DataMode) {
-	console.log('updateI18nForMode:', mode)
-	const backend: any = (i18n.services as any).backendConnector?.backend ?? null
-
-	if (backend) {
-		backend.options = backend.options || {}
-		backend.options.loadPath = getBackendLoadPath(mode)
-	}
-
-	i18n
-		.reloadResources()
-		.catch(e => console.error('[useDataMode] reloadResources error:', e))
 }
 
 // --- Provider ---
@@ -104,24 +87,14 @@ export function DataModeProvider({ children }: ProviderProps) {
 		return computeBaseUrl(dataMode)
 	}, [dataMode])
 
-	const reloadI18n = useCallback(() => {
-		updateI18nForMode(dataMode)
-	}, [dataMode])
-
-	// Automatically reload i18n whenever mode changes
-	useEffect(() => {
-		updateI18nForMode(dataMode)
-	}, [dataMode])
-
 	const value = useMemo<DataModeContextValue>(
 		() => ({
 			dataMode,
 			setDataMode,
 			toggleDataMode,
 			getBaseUrl,
-			reloadI18n,
 		}),
-		[dataMode, setDataMode, toggleDataMode, getBaseUrl, reloadI18n]
+		[dataMode, setDataMode, toggleDataMode, getBaseUrl]
 	)
 
 	return (
